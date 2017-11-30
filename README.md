@@ -1,2 +1,2 @@
 # canvas-task
-## Demo [canvas-task](Mikalai-Suhlob.github.io/canvas-task/index.html)
+## Demo [canvas-task](https://mikalai-suhlob.github.io/canvas-task/index.html)
