@@ -201,43 +201,110 @@ var container = document.getElementById("container");
 var canvas = document.getElementById("canvas");
 canvas.width = window.innerWidth - 10;
 canvas.height = window.innerHeight - 10;
-
+// canvas.width = container.offsetWidth - 2;
+// canvas.height = container.offsetHeight - 2;
 var ctx = canvas.getContext("2d");
 
     
-var triangle1 = new Polygon( {"x":50, "y":50 }, "#00FF00" );
+// var triangle1 = new Polygon( {"x":50, "y":50 }, "#00FF00" );
 
-triangle1.addPoint({"x":20, "y":20});
-triangle1.addPoint({"x":500, "y":20});
-triangle1.addPoint({"x":500, "y":200});
+// triangle1.addPoint({"x":20, "y":20});
+// triangle1.addPoint({"x":500, "y":20});
+// triangle1.addPoint({"x":500, "y":200});
     
-var triangle2 = new Polygon( {"x":100, "y":520 }, "#0000FF");
-triangle2.addAbsolutePoint({"x":150, "y":570});
-triangle2.addAbsolutePoint({"x":130, "y":170});
-triangle2.addAbsolutePoint({"x":170, "y":170});
-triangle2.addAbsolutePoint({"x":200, "y":250});
+// var triangle2 = new Polygon( {"x":100, "y":520 }, "#0000FF");
+// triangle2.addAbsolutePoint({"x":150, "y":570});
+// triangle2.addAbsolutePoint({"x":130, "y":170});
+// triangle2.addAbsolutePoint({"x":170, "y":170});
+// triangle2.addAbsolutePoint({"x":200, "y":250});
     
-var objs = new Array();
-objs.push(triangle1);
-objs.push(triangle2);
+var polygons = new Array();
+// objs.push(triangle1);
+// objs.push(triangle2);
 
+function addPolygon(points, fillStyle="#ccc") {
+    let poly = new Polygon(points[0], fillStyle)
+    for(let i = 1; i<points.length; i++) {
+        poly.addAbsolutePoint(points[i])
+    }
+    polygons.push(poly)
+}
+
+function addPolygons(arrArr) {
+    arrArr.forEach(el=> {
+        addPolygon(el)
+    })
+}
+
+// addPolygon([{"x":50, "y":50 }, {"x":20, "y":20}, {"x":500, "y":20}, {"x":500, "y":200}]);
+// addPolygon([{"x":100, "y":520 }, {"x":150, "y":570}, {"x":130, "y":170}, {"x":170, "y":170}, {"x":200, "y":250}]);
+
+addPolygons([
+    [{"x":50, "y":50 }, {"x":20, "y":20}, {"x":500, "y":20}, {"x":500, "y":200}],
+    [{"x":100, "y":520 }, {"x":150, "y":570}, {"x":130, "y":170}, {"x":170, "y":170}, {"x":200, "y":250}],
+    [{"x":520, "y":520 }, {"x":500, "y":500}, {"x":600, "y":500}, {"x":600, "y":600}]
+    // [{"x":270, "y":270 }, {"x":290, "y":270}, {"x":290, "y":290}]
+])
 
 function drawStuff() {
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
     
-    if (triangle1.intersectsWith(triangle2)) {
-        triangle1.color = "#FF0000";
-        triangle2.color = "#FF0000";
-    } else {
-        triangle1.color = "#00FF00";
-        triangle2.color = "#0000FF";
-    }
+    // if (triangle1.intersectsWith(triangle2)) {
+    //     triangle1.color = "#FF0000";
+    //     triangle2.color = "#FF0000";
+    // } else {
+    //     triangle1.color = "#00FF00";
+    //     triangle2.color = "#0000FF";
+    // }
+    checkIntesection(polygons)
     
-    for (var i = 0; i < objs.length; i++) {
-        objs[i].draw(ctx);
+    for (var i = 0; i < polygons.length; i++) {
+        polygons[i].draw(ctx);
     }
 
+}
+
+function checkIntesection(polygons) {
+    polygons.forEach((el, index)=> {
+        for(let i = 0; i<polygons.length; i++) {
+            if(i == index) {
+                continue;
+            }
+            el.intersected = false;
+            if(el.intersectsWith(polygons[i])) {
+                el.intersected = true;
+                break;
+            } 
+
+            // if(!el.intersectsWith(polygons[i])) {
+            //     el.color = "#ccc";
+            //     polygons[i].color = "#ccc";
+            // } 
+            // else {
+            //     el.color = "#ccc";
+            //     polygons[i].color = "#ccc"
+            // }
+        }
+    });
+    polygons.forEach(el=> {
+        if(el.intersected) {
+            el.color = '#FF0000'
+        } else {
+            el.color = '#ccc'
+        }
+    })
+    // polygons.forEach((el, index)=> {
+    //     for(let i = 0; i<polygons.length; i++) {
+    //         if(i == index) {
+    //             continue;
+    //         }
+    //         if(!el.intersectsWith(polygons[i])) {
+    //             el.color = "#ccc";
+    //             polygons[i].color = "#ccc";
+    //         } 
+    //     }
+    // })
 }
 
 
@@ -245,11 +312,17 @@ function canvasDown(evt) {
 
     var tpos = findPos(evt.target);
     var p = new Point(evt.pageX - tpos[0], evt.pageY - tpos[1]);
-    if (triangle1.containsPoint(p)) {
-        dragInfo = { "obj" : triangle1, "x" : p.x, "y" : p.y };
-    } else if (triangle2.containsPoint(p)) {
-        dragInfo = { "obj" : triangle2, "x" : p.x, "y" : p.y };
+    
+    for (var i = 0; i < polygons.length; i++) {
+        if (polygons[i].containsPoint(p)) {
+            dragInfo = { "obj" : polygons[i], "x" : p.x, "y" : p.y };
+        }
     }
+    // if (triangle1.containsPoint(p)) {
+    //     dragInfo = { "obj" : triangle1, "x" : p.x, "y" : p.y };
+    // } else if (triangle2.containsPoint(p)) {
+    //     dragInfo = { "obj" : triangle2, "x" : p.x, "y" : p.y };
+    // }
 
 }
 
